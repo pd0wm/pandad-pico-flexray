@@ -555,12 +555,22 @@ bool Panda::unpack_flexray_buffer(uint8_t *data, uint32_t &size, std::vector<can
     bool payload_crc_ok = (payload_crc == crc_stream);
 
     if (header_crc_ok && payload_crc_ok) {
-      can_frame &canData = out_vec.emplace_back();
-      canData.address = frame.frame_id;
-      canData.src = frame.source + bus_offset;
-      size_t payload_len = std::min((size_t)expected_payload_bytes, sizeof(frame.payload));
-      canData.dat.assign(1, frame.cycle_count);
-      canData.dat.append(frame.payload, payload_len);
+      {
+        can_frame &canData = out_vec.emplace_back();
+        canData.address = frame.frame_id;
+        canData.src = frame.source + bus_offset;
+        size_t payload_len = std::min((size_t)expected_payload_bytes, sizeof(frame.payload));
+        canData.dat.assign(1, frame.cycle_count);
+        canData.dat.append(frame.payload, payload_len);
+      }
+      {
+        can_frame &canData = out_vec.emplace_back();
+        canData.address = (frame.frame_id << 8) | (frame.cycle_count & 0b11);
+        canData.src = frame.source + bus_offset;
+        size_t payload_len = std::min((size_t)expected_payload_bytes, sizeof(frame.payload));
+        canData.dat.assign(1, frame.cycle_count);
+        canData.dat.append(frame.payload, payload_len);
+      }
     }
 
     // advance to next record

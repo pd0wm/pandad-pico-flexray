@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 # simple pandad wrapper that updates the panda first
 import os
-import usb1
-import time
 import signal
 import subprocess
+import time
 
-from panda import Panda, PandaDFU, PandaProtocolMismatch, McuType, FW_PATH
+import usb1
+
+from opendbc.car.structs import CarParams
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
-from openpilot.system.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
+from openpilot.system.hardware import HARDWARE
+from panda import FW_PATH, McuType, Panda, PandaDFU, PandaProtocolMismatch
 
 PICO_FLEXRAY_DONGLE_ID_PREFIX = "picoflex"
+
 
 def get_expected_signature() -> bytes:
   try:
@@ -21,6 +24,7 @@ def get_expected_signature() -> bytes:
   except Exception:
     cloudlog.exception("Error computing expected signature")
     return b""
+
 
 def flash_panda(panda_serial: str) -> Panda:
   if panda_serial.startswith(PICO_FLEXRAY_DONGLE_ID_PREFIX):
@@ -177,6 +181,7 @@ def main() -> None:
           # reset panda to ensure we're in a good state
           cloudlog.info(f"Resetting panda {panda.get_usb_serial()}")
           panda.reset(reconnect=True)
+          panda.set_safety_mode(CarParams.SafetyModel.allOutput)
 
       for p in pandas:
         p.close()

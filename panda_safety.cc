@@ -4,15 +4,22 @@
 
 void PandaSafety::configureSafetyMode(bool is_onroad) {
   if (is_onroad && !safety_configured_) {
-    updateMultiplexingMode();
+    // updateMultiplexingMode();
 
-    auto car_params = fetchCarParams();
-    if (!car_params.empty()) {
-      LOGW("got %lu bytes CarParams", car_params[0].size());
-      LOGW("got %lu bytes CarParamsSP", car_params[1].size());
-      setSafetyMode(car_params);
-      safety_configured_ = true;
+    // auto car_params = fetchCarParams();
+    // if (!car_params.empty()) {
+    //   LOGW("got %lu bytes CarParams", car_params[0].size());
+    //   LOGW("got %lu bytes CarParamsSP", car_params[1].size());
+    //   setSafetyMode(car_params);
+    //   safety_configured_ = true;
+    // }
+    //
+    //
+    for (int i = 0; i < pandas_.size(); ++i) {
+      pandas_[i]->set_safety_model(cereal::CarParams::SafetyModel::ALL_OUTPUT, 0U);
     }
+
+    safety_configured_ = true;
   } else if (!is_onroad) {
     initialized_ = false;
     safety_configured_ = false;
